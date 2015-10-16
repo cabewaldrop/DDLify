@@ -12,26 +12,35 @@ class TestPhyModel(unittest.TestCase):
         with self.assertRaises(ValueError):
             PhyModel.PhyModel('filename.xls')
 
-    def test_primary_key_exists(self):
+    def test_primary_key_data(self):
 
-        self.assertEqual(self.book.primary_key, '')
+        self.assertEqual(self.book.primary_key, [{'Key': 'PK_DIM_TEST',
+                                                  'Type': 'Primary Key',
+                                                  'Index': 'IX_DIM_TEST_PK',
+                                                  'Columns': 'TEST_COLUMN_1'}])
 
     def test_index_list(self):
 
-        self.assertEqual(self.book.indexes, [])
+        self.assertEqual(self.book.indexes, [{'Index': 'IX_DIM_TEST_PK',
+                                              'Tablespace': 'TEST_DATA',
+                                              'Is Unique?': 'Y',
+                                              'Is Compression Enabled?': 'N',
+                                              'Is Logging Enabled?': 'N',
+                                              'Columns': 'TEST_COLUMN_1',
+                                              'Order': 'ASC'}])
 
     def test_column_list(self):
 
-        self.assertEqual(self.book.columns, [{'Order '1.0',
-                                             'TEST_COLUMN_1',
-                                              'INTEGER',
-                                              'NULL',
-                                              'TEST COLUMN: COMMENT ONE',
-                                              '2.0'
-                                              'TEST_COLUMN_2',
-                                              'VARCHAR2(20)',
-                                              'NULL',
-                                              'TEST COLUMN: COMMENT TWO'])
+        self.assertEqual(self.book.columns, [{'Order': '1.0',
+                                              'Column': 'TEST_COLUMN_1',
+                                              'Datatype': 'INTEGER',
+                                              'Nullity': 'NULL',
+                                              'Comment': 'TEST COLUMN: COMMENT ONE'},
+                                             {'Order': '2.0',
+                                              'Column': 'TEST_COLUMN_2',
+                                              'Datatype': 'VARCHAR2(20)',
+                                              'Nullity': 'NULL',
+                                              'Comment': 'TEST COLUMN: COMMENT TWO'}])
 
 if __name__ == '__main__':
     unittest.main()
