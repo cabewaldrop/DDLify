@@ -52,3 +52,9 @@ def get_primary_key_data(sheet):
         return_list.append(temp_dict)
 
     return return_list
+
+def print_usage():
+
+    print "*"*75
+    print "The DDLify script takes 1 argument. Either -directory=directory_string or -filename=file_string"
+    print "*"*75

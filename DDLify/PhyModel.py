@@ -19,6 +19,7 @@ class PhyModel(object):
         self.schema = self.get_schema()
         self.tablespace = self.get_tablespace()
         self.tabletype = self.get_tabletype()
+        self.table_name = self.get_table_name()
 
     def get_columns(self):
 
