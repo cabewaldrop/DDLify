@@ -42,5 +42,18 @@ class TestPhyModel(unittest.TestCase):
                                               'Nullity': 'NULL',
                                               'Comment': 'TEST COLUMN: COMMENT TWO'}])
 
+    def test_tablespace(self):
+
+        self.assertEqual(self.book.tablespace, 'TEST_DATA')
+
+    def test_schema(self):
+
+        self.assertEqual(self.book.schema, 'TEST_OWNER')
+
+    def test_tabletype(self):
+
+        self.assertEqual(self.book.tabletype, 'Dimension')
+
+
 if __name__ == '__main__':
     unittest.main()
