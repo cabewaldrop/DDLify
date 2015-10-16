@@ -54,6 +54,10 @@ class TestPhyModel(unittest.TestCase):
 
         self.assertEqual(self.book.tabletype, 'Dimension')
 
+    def test_table_name(self):
+
+        self.assertEqual(self.book.table_name, 'DIM_TEST')
+
 
 if __name__ == '__main__':
     unittest.main()
