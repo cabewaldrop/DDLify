@@ -42,6 +42,12 @@ class PhyModel(object):
           15) Primary key column is specified
         """
 
+    def create_ddl_file(self):
+        """
+        TO-DO: Create routine to output DDL using the attributes gathered during initialization.  This DDL should have
+        structure matching our current ddl files and should be output into the working directory under owner, stage, or
+        amalgamation.
+        """
     def get_columns(self):
 
         sheet = self.book.sheet_by_index(0)
