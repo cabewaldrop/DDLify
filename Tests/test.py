@@ -6,6 +6,7 @@ class TestPhyModel(unittest.TestCase):
     def setUp(self):
 
         self.book = PhyModel.PhyModel('test_model.xls')
+        self.bad_book = PhyModel.PhyModel('bad_model.xls')
 
     def test_bad_file_name_throws_error(self):
 
@@ -57,6 +58,20 @@ class TestPhyModel(unittest.TestCase):
     def test_table_name(self):
 
         self.assertEqual(self.book.table_name, 'DIM_TEST')
+
+    def test_validation_on_correct_model(self):
+
+        self.assertTrue(self.book.is_valid)
+
+    def test_validation_on_incorrect_model(self):
+
+        self.assertFalse(self.bad_book.is_valid)
+
+    def test_validation_message_on_incorrect_model(self):
+        """
+        TO-DO: Update this test so that it validates the actual message sent by the validation routine
+        """
+        self.assertEqual(self.bad_book.validation_message, 'Test')
 
 
 if __name__ == '__main__':

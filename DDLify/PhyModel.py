@@ -20,6 +20,8 @@ class PhyModel(object):
         self.tablespace = self.get_tablespace()
         self.tabletype = self.get_tabletype()
         self.table_name = self.get_table_name()
+        self.is_valid = False
+        self.validation_message = ''
 
     def validate_model(self):
         """TO-DO: Create validation code here. This code should include checks for the following:
