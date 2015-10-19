@@ -1,13 +1,25 @@
-import sys, getopt
+import sys
 from DDLify.utility_funcs import print_usage
 
-def main(argv):
-
-    try:
-        opts, args = getopt.getopt(argv, "hd:f:", ["directory=", "filename="])
-    except getopt.GetoptError:
+def setup(argv):
+    if len(argv) != 2:
         print_usage()
+        sys.exit(2)
+    else:
+        filename = argv[1]
 
+    return filename
+
+
+
+def main(filename):
+    print "To-Do"
+
+
+def teardown():
+    print "teardown"
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+   filename = setup(sys.argv)
+   main(filename)
+   teardown()
