@@ -26,7 +26,7 @@ class PhyModel(object):
     def validate_model(self):
         """TO-DO: Create validation code here. This code should include checks for the following:
            1) Schema name is valid and matches an existing schema.
-           2) Table name is valid and the appropriate amount of characters (27 characters)
+           2) Table name is valid and the appropriate amount of characters (24 characters)
            3) Test that table type is valid and in the list of  [Dimension, Lookup, Link, Fact, Stage]
            4) Test that table comment is populated
            5) For each column there should be an associated comment.  Failing this test should issue a warning, but not fail the build
