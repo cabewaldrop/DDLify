@@ -3,6 +3,7 @@
 
 import xlrd
 from utility_funcs import get_column_names, get_column_data, get_index_data, get_primary_key_data
+from validate_funcs import schema_list, table_type_list
 
 class PhyModel(object):
 
@@ -20,10 +21,41 @@ class PhyModel(object):
         self.tablespace = self.get_tablespace()
         self.tabletype = self.get_tabletype()
         self.table_name = self.get_table_name()
+        self.get_tablecomment = self.get_tablecomment()
         self.is_valid = False
         self.validation_message = ''
 
+
     def validate_model(self):
+
+        #1) Schema name is valid and matches an existing schema.
+
+        if self.schema in schema_list():
+            pass
+        else:
+            self.validation_message = 'Schema is not in the list'
+
+        #2) Table name is valid and the appropriate amount of characters (27 characters)
+        if len(self.table_name) < 28:
+            pass
+        else:
+            self.validation_message = 'Table name greater than 27 characters'
+
+        #3) Test that table type is valid and in the list of  [Dimension, Lookup, Link, Fact, Stage]
+        if self.tabletype in table_type_list():
+            pass
+        else:
+            self.validation_message = 'Table Type is not in the list'
+
+        #4) Test that table comment is populated
+        if len(self.get_tablecomment) > 0:
+            pass
+        else:
+            self.validation_message = 'Table Name is empty'
+
+        #5) For each column there should be an associated comment.  Failing this test should issue a warning, but not fail the build
+
+
         """TO-DO: Create validation code here. This code should include checks for the following:
            1) Schema name is valid and matches an existing schema.
            2) Table name is valid and the appropriate amount of characters (24 characters)
@@ -95,5 +127,12 @@ class PhyModel(object):
 
         sheet = self.book.sheet_by_index(0)
         cell = sheet.row(2)[2]
+
+        return str(cell.value)
+
+    def get_tablecomment(self):
+
+        sheet = self.book.sheet_by_index(0)
+        cell = sheet.row(6)[2]
 
         return str(cell.value)
