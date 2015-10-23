@@ -73,6 +73,5 @@ class TestPhyModel(unittest.TestCase):
         """
         self.assertEqual(self.bad_book.validation_message, 'Test')
 
-
 if __name__ == '__main__':
     unittest.main()
