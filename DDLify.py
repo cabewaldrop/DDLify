@@ -31,7 +31,7 @@ def teardown():
     """
     This is a placeholder for any cleanup work that may need to be done after the script is run. I am not sure if we will
     need this, but it is here as part of a general pattern I like to follow with a setup, main, and teardown structure for
-    the python executable. 
+    the python executable.
     """
     print "teardown"
 
