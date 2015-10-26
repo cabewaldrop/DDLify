@@ -1,3 +1,5 @@
+import os, fnmatch
+
 def get_column_names(sheet, row):
 
         header = sheet.row(row)
@@ -52,6 +54,11 @@ def get_primary_key_data(sheet):
         return_list.append(temp_dict)
 
     return return_list
+
+def findXls (path, filter):
+    for root, dirs, files, in os.walk(path):
+        for file in fnmatch.filter(files, filter):
+            yield os.path.join(root, file)
 
 def print_usage():
 

@@ -1,5 +1,7 @@
 import sys
-from DDLify.utility_funcs import print_usage
+import os
+from DDLify.utility_funcs import print_usage, findXls
+from DDLify.PhyModel import PhyModel
 
 def setup(argv):
     """
@@ -25,7 +27,18 @@ def main(filename):
     probably want to investigate the os module that comes standard with python for manipulating files in order to write
     this function.
     """
+    model = PhyModel(filename)
 
+    if os.path.isfile(filename):
+        if model.is_valid:
+            model.create_ddl_file
+        else: sys.exit(1)
+    elif os.path.isdir(filename):
+        for xlsFile in findXls(filename, '*.xls'):
+            if xlsFile.is_valid:
+                xlsFile.create_ddl_file
+            else: sys.exit(1)
+    else: sys.exit(1)
 
 def teardown():
     """
