@@ -25,6 +25,23 @@ class PhyModel(object):
         self.is_valid = False
         self.validation_message = ''
 
+        """TO-DO: Create validation code here. This code should include checks for the following:
+           1) Schema name is valid and matches an existing schema.
+           2) Table name is valid and the appropriate amount of characters (24 characters)
+           3) Test that table type is valid and in the list of  [Dimension, Lookup, Link, Fact, Stage]
+           4) Test that table comment is populated
+           5) For each column there should be an associated comment.  Failing this test should issue a warning, but not fail the build
+           6) For each column nullity is specified
+           7) For each column datatype is specified
+           8) Each column name is 30 characters or less
+           9) Tab name for the first tab matches table name
+          10) Index naming convention is followed IX_TableName_XX or IX_TableName_PK for primary keys
+          11) Index tablespace is specified
+          12) Index column is specified
+          13) Primary key follows primary key naming standard. PK_TableName
+          14) Primary key index is specified
+          15) Primary key column is specified
+        """
 
     def validate_model(self):
 
@@ -54,25 +71,97 @@ class PhyModel(object):
             self.validation_message = 'Table Name is empty'
 
         #5) For each column there should be an associated comment.  Failing this test should issue a warning, but not fail the build
+        first_sheet = self.book.sheet_by_index(0)
+        first_num_rows = first_sheet.nrows
+        for x in range(9,first_num_rows):
+            if first_sheet.cell(x, 4).value == xlrd.empty_cell.value:
+                self.validation_message = "Warning: Comment empty for column %d" % (x-8)
+            else:
+                pass
 
+        #6) For each column nullity is specified
+        for x in range(9,first_num_rows):
+            if first_sheet.cell(x, 3).value == xlrd.empty_cell.value:
+                self.validation_message = "Nullity not specified for column %d" % (x-8)
+            else:
+                pass
 
-        """TO-DO: Create validation code here. This code should include checks for the following:
-           1) Schema name is valid and matches an existing schema.
-           2) Table name is valid and the appropriate amount of characters (24 characters)
-           3) Test that table type is valid and in the list of  [Dimension, Lookup, Link, Fact, Stage]
-           4) Test that table comment is populated
-           5) For each column there should be an associated comment.  Failing this test should issue a warning, but not fail the build
-           6) For each column nullity is specified
-           7) For each column datatype is specified
-           8) Each column name is 30 characters or less
-           9) Tab name for the first tab matches table name
-          10) Index naming convention is followed IX_TableName_XX or IX_TableName_PK for primary keys
-          11) Index tablespace is specified
-          12) Index column is specified
-          13) Primary key follows primary key naming standard. PK_TableName
-          14) Primary key index is specified
-          15) Primary key column is specified
-        """
+        #7) For each column datatype is specified
+        for x in range(9,first_num_rows):
+            if first_sheet.cell(x, 2).value == xlrd.empty_cell.value:
+                self.validation_message = "Datatype not specified for column %d" % (x-8)
+            else:
+                pass
+
+        #8) Each column name is 30 characters or less
+        for x in range(9,first_num_rows):
+            if len(first_sheet.cell(x, 1).value) > 30:
+                self.validation_message = "Length of clolumn name exceeds 30 for column %d" % (x-8)
+            else:
+                pass
+
+        #9) Tab name for the first tab matches table name
+        if first_sheet.name <> str(first_sheet.cell(1, 2).value):
+            self.validation_message = "Table name and Tab name are not same"
+        else:
+            pass
+
+        #10) Index naming convention is followed IX_TableName_XX or IX_TableName_PK for primary keys
+        second_sheet = self.book.sheet_by_index(1)
+        second_num_rows = second_sheet.nrows
+        if second_sheet.cell(1, 0).value <> 'IX_'+ first_sheet.cell(1, 2).value + '_PK':
+            self.validation_message = "Index naming convention is not correct"
+        else:
+            pass
+
+        for x in range(2,second_num_rows):
+            if second_sheet.cell(x, 0).value <> 'IX_'+ first_sheet.cell(1, 2).value + '_0%d' %(x-1) :
+                self.validation_message = "Index naming convention is not correct"
+            else:
+                pass
+
+        #11) Index tablespace is specified
+        for x in range(1,second_num_rows):
+            if second_sheet.cell(x, 1).value == xlrd.empty_cell.value:
+                self.validation_message = "Tablespace for Index not specified for " + second_sheet.cell(x, 0).value
+            else:
+                pass
+
+        #12) Index column is specified
+        for x in range(1,second_num_rows):
+            if second_sheet.cell(x, 5).value == xlrd.empty_cell.value:
+                self.validation_message = "Column for Index not specified for " + second_sheet.cell(x, 0).value
+            else:
+                pass
+
+        #13) Primary key follows primary key naming standard. PK_TableName
+        third_sheet = self.book.sheet_by_index(2)
+        third_num_rows = third_sheet.nrows
+        if third_sheet.cell(1, 0).value <> 'PK_'+ first_sheet.cell(1, 2).value:
+            self.validation_message = "Primary naming convention is not correct"
+        else:
+            pass
+
+        #14) Primary key index is specified
+        for x in range(1,third_num_rows):
+            if third_sheet.cell(x, 2).value == xlrd.empty_cell.value:
+                self.validation_message = "Primary Key Index not specified for " + third_sheet.cell(x, 0).value
+            else:
+                pass
+
+        #15) Primary key column is specified
+        for x in range(1,third_num_rows):
+            if third_sheet.cell(x, 3).value == xlrd.empty_cell.value:
+                self.validation_message = "Primary Key column not specified for " + third_sheet.cell(x, 0).value
+            else:
+                pass
+
+        if self.validation_message == '':
+            pass
+        else:
+            print(self.validation_message)
+            exit()
+
 
     def create_ddl_file(self):
         """
@@ -136,3 +225,5 @@ class PhyModel(object):
         cell = sheet.row(6)[2]
 
         return str(cell.value)
+
+
