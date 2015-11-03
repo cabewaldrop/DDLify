@@ -25,24 +25,6 @@ class PhyModel(object):
         self.is_valid = False
         self.validation_message = ''
 
-        """TO-DO: Create validation code here. This code should include checks for the following:
-           1) Schema name is valid and matches an existing schema.
-           2) Table name is valid and the appropriate amount of characters (24 characters)
-           3) Test that table type is valid and in the list of  [Dimension, Lookup, Link, Fact, Stage]
-           4) Test that table comment is populated
-           5) For each column there should be an associated comment.  Failing this test should issue a warning, but not fail the build
-           6) For each column nullity is specified
-           7) For each column datatype is specified
-           8) Each column name is 30 characters or less
-           9) Tab name for the first tab matches table name
-          10) Index naming convention is followed IX_TableName_XX or IX_TableName_PK for primary keys
-          11) Index tablespace is specified
-          12) Index column is specified
-          13) Primary key follows primary key naming standard. PK_TableName
-          14) Primary key index is specified
-          15) Primary key column is specified
-        """
-
     def validate_model(self):
 
         #1) Schema name is valid and matches an existing schema.
