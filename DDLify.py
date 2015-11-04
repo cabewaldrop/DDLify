@@ -30,12 +30,14 @@ def main(filename):
     model = PhyModel(filename)
 
     if os.path.isfile(filename):
+        model.validate_model(filename)
         if model.is_valid:
-            model.create_ddl_file
+                model.create_ddl_file
         else: sys.exit(1)
     elif os.path.isdir(filename):
         for xlsFile in findXls(filename, '*.xls'):
-            if xlsFile.is_valid:
+            model.validate_model(xlsFile)
+            if model.is_valid:
                 xlsFile.create_ddl_file
             else: sys.exit(1)
     else: sys.exit(1)
