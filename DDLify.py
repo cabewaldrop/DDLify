@@ -1,6 +1,6 @@
 import sys
 import os
-from DDLify.utility_funcs import print_usage, findXls
+from DDLify.utility_funcs import print_usage
 from DDLify.PhyModel import PhyModel
 
 
