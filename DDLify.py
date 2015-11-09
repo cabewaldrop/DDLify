@@ -3,6 +3,7 @@ import os
 from DDLify.utility_funcs import print_usage, findXls
 from DDLify.PhyModel import PhyModel
 
+
 def setup(argv):
     """
     The setup function should first check and make sure that a filename or directory name has been given as a parameter.
@@ -17,7 +18,6 @@ def setup(argv):
     return filename
 
 
-
 def main(filename):
     """
     The main function should check and see if the filename parameter represents a directory or a file.  If it is a file
@@ -27,20 +27,22 @@ def main(filename):
     probably want to investigate the os module that comes standard with python for manipulating files in order to write
     this function.
     """
-    model = PhyModel(filename)
 
     if os.path.isfile(filename):
-        model.validate_model(filename)
+        model = PhyModel(filename)
+        model.validate_model()
         if model.is_valid:
                 model.create_ddl_file
         else: sys.exit(1)
     elif os.path.isdir(filename):
         for xlsFile in findXls(filename, '*.xls'):
-            model.validate_model(xlsFile)
+            model = PhyModel(xlsFile)
+            model.validate_model()
             if model.is_valid:
-                xlsFile.create_ddl_file
+                model.create_ddl_file
             else: sys.exit(1)
     else: sys.exit(1)
+
 
 def teardown():
     """
