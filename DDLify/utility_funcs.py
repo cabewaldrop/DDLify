@@ -55,11 +55,6 @@ def get_primary_key_data(sheet):
 
     return return_list
 
-def findXls (path, filter):
-    for root, dirs, files, in os.walk(path):
-        for file in fnmatch.filter(files, filter):
-            yield os.path.join(root, file)
-
 def print_usage():
 
     print "*"*75

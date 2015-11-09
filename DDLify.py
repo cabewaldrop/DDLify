@@ -35,12 +35,14 @@ def main(filename):
                 model.create_ddl_file
         else: sys.exit(1)
     elif os.path.isdir(filename):
-        for xlsFile in findXls(filename, '*.xls'):
-            model = PhyModel(xlsFile)
-            model.validate_model()
-            if model.is_valid:
-                model.create_ddl_file
-            else: sys.exit(1)
+        for spreadsheet in os.listdir(filename):
+            if spreadsheet.endswith(".xls"):
+                model = PhyModel(spreadsheet)
+                model.validate_model()
+                if model.is_valid:
+                    model.create_ddl_file
+                else: sys.exit(1)
+                continue
     else: sys.exit(1)
 
 
