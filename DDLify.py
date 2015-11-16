@@ -31,7 +31,7 @@ def main(filename):
     if os.path.isfile(filename):
         model = PhyModel(filename)
         model.validate_model()
-        if model.is_valid:
+        if model.validation_message == '':
                 model.create_ddl_file
         else: sys.exit(1)
     elif os.path.isdir(filename):
@@ -39,7 +39,7 @@ def main(filename):
             if spreadsheet.endswith(".xls"):
                 model = PhyModel(spreadsheet)
                 model.validate_model()
-                if model.is_valid:
+                if model.validation_message == '':
                     model.create_ddl_file
                 else: sys.exit(1)
                 continue
