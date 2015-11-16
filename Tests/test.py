@@ -73,5 +73,10 @@ class TestPhyModel(unittest.TestCase):
         """
         self.assertEqual(self.bad_book.validation_message, 'Test')
 
+    def test_output_of_script(self):
+        """
+        TO-DO: Add test to compare output of DDLify::Main to owner.sql
+        """
+
 if __name__ == '__main__':
     unittest.main()
