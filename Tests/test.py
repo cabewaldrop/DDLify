@@ -1,5 +1,9 @@
 import unittest
+import filecmp
+import getpass
+import difflib
 from DDLify import PhyModel
+
 
 class TestPhyModel(unittest.TestCase):
 
@@ -73,10 +77,22 @@ class TestPhyModel(unittest.TestCase):
         """
         self.assertEqual(self.bad_book.validation_message, 'Test')
 
+    # Comparing output DDL with correct DDL
     def test_output_of_script(self):
-        """
-        TO-DO: Add test to compare output of DDLify::Main to owner.sql
-        """
+        username=getpass.getuser()
+        outputDDL = 'C:\\Users\\'+username+'\\PycharmProjects\\DDLify\\DDL_OUT\\owner.sql'
+        correctDDL = 'C:\\Users\\'+username+'\\PycharmProjects\\DDLify\\Tests\\correct_ddl.sql'
+
+        if filecmp.cmp(outputDDL,correctDDL) == True:
+            print('Files are identical')
+        else:
+            print('Files are NOT identical')
+            with open(outputDDL) as o, open(correctDDL) as c:
+                outputDDLlines = o.readlines()
+                correctDDLlines = c.readlines()
+                d = difflib.Differ()
+                diff = d.compare(outputDDLlines, correctDDLlines)
+                print("".join(diff))
 
 if __name__ == '__main__':
     unittest.main()
