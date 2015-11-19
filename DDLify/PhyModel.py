@@ -203,8 +203,6 @@ class PhyModel(object):
             f.write('GRANT ALTER ON ' + schema + '.' + table_name + ' TO SDSS_JOBS;\n')
         elif 'CA_FACT_ACCT_PRFTBLY_MNTHLY' in table_name:
             f.write('GRANT ALTER ON ' + schema + '.' + table_name + ' TO CA_JOBS;\n')
-        else:
-            raise Exception('No tablespace configured for schema: ' + schema)
 
         if second_sheet.cell(1, 2).value == 'Y':
             f.write('CREATE UNIQUE INDEX ' + schema + '.' + index + ' ON ' + schema + '.' + table_name + '(' + index_column + ' ' + index_order + ')\n')
@@ -219,9 +217,7 @@ class PhyModel(object):
         else:
             f.write('COMPRESS\n')
         f.write('TABLESPACE ' + tablespace + '\n;\n')
-        if primary_key is not None:
-            f.write('ALTER TABLE ' + schema + '.' + table_name + ' ADD CONSTRAINT ' + primary_key + ' PRIMARY KEY (' + pk_column + ') USING INDEX ' + schema + '.' + pk_index + ';\n\n\n')
-
+        f.write('ALTER TABLE ' + schema + '.' + table_name + ' ADD CONSTRAINT ' + primary_key + ' PRIMARY KEY (' + pk_column + ') USING INDEX ' + schema + '.' + pk_index + ';\n\n\n')
         f.write('COMMENT ON TABLE ' + schema + '.' + table_name + '\t\t\tIS \'' + table_comment + '\';')
         for x in range(9, first_num_rows):
             f.write('\nCOMMENT ON COLUMN ' + schema + '.' + table_name + '.' + first_sheet.cell(x, 1).value + '\t\tIS \'' + first_sheet.cell(x, 4).value + '\';')

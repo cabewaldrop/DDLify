@@ -1,6 +1,5 @@
 import sys
 import os
-from DDLify.utility_funcs import print_usage
 from DDLify.PhyModel import PhyModel
 
 def main(filename):
@@ -17,7 +16,7 @@ def main(filename):
         model = PhyModel(filename)
         model.validate_model()
         if model.validation_message == '':
-                model.create_ddl_file
+                model.create_ddl_file()
         else:
             sys.exit(1)
     elif os.path.isdir(filename):
@@ -26,7 +25,7 @@ def main(filename):
                 model = PhyModel(spreadsheet)
                 model.validate_model()
                 if model.validation_message == '':
-                    model.create_ddl_file
+                    model.create_ddl_file()
                 else:
                     sys.exit(1)
                 continue
