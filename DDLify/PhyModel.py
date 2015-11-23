@@ -167,8 +167,8 @@ class PhyModel(object):
 
         for i, x in enumerate(range(9, first_num_rows)):
             if i > 0:
-                f.write(',',)
-            f.write('\n\t' + first_sheet.cell(x, 1).value + '\t\t' + first_sheet.cell(x, 2).value + '\t' + first_sheet.cell(x, 3).value)
+                f.write('\n, ',)
+            f.write('%-*s %-*s %s' % (35, (first_sheet.cell(x, 1).value), 20, (first_sheet.cell(x, 2).value), (first_sheet.cell(x, 3).value)))
         f.write('\n)\nCOMPRESS FOR OLTP\nTABLESPACE ' + tablespace + '\n;\n\n\n')
         if '_OWNER' in schema:
             f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_JOBS;\n'
@@ -182,11 +182,11 @@ class PhyModel(object):
             f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_JOBS;\n'
                     'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_STG_RW;\n'
                     'GRANT SELECT ON ' + schema + '.' + table_name + ' TO ' + system + '_STG_READ;\n'
-                    # 'GRANT SELECT ON ' + schema +'.'+ table_name + ' TO ' + system + '_UTEST;\n'
+                    # 'GRANT SELECT ON ' + schema + '.' + table_name + ' TO ' + system + '_UTEST;\n'
                     'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ETL_ADMIN;\n'
                     'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + schema + '.' + table_name + ' TO DEVELOPER_RW;\n\n')
         elif '_JOBS' in schema:
-            f.write('GRANT SELECT ON ' + schema + '.' + table_name + ' TO ' + system + '_UTEST;\n'
+            f.write(  # 'GRANT SELECT ON ' + schema + '.' + table_name + ' TO ' + system + '_UTEST;\n'
                     'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ETL_ADMIN;\n'
                     'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + schema + '.' + table_name + ' TO DEVELOPER_RW;\n\n')
         elif '_CNTL' in schema:
@@ -218,9 +218,9 @@ class PhyModel(object):
             f.write('COMPRESS\n')
         f.write('TABLESPACE ' + tablespace + '\n;\n')
         f.write('ALTER TABLE ' + schema + '.' + table_name + ' ADD CONSTRAINT ' + primary_key + ' PRIMARY KEY (' + pk_column + ') USING INDEX ' + schema + '.' + pk_index + ';\n\n\n')
-        f.write('COMMENT ON TABLE ' + schema + '.' + table_name + '\t\t\tIS \'' + table_comment + '\';')
+        f.write('COMMENT ON TABLE %s.%-*s IS \'%s\';' % (schema, 48, table_name, table_comment))
         for x in range(9, first_num_rows):
-            f.write('\nCOMMENT ON COLUMN ' + schema + '.' + table_name + '.' + first_sheet.cell(x, 1).value + '\t\tIS \'' + first_sheet.cell(x, 4).value + '\';')
+            f.write('\nCOMMENT ON COLUMN %s.%s.%-*s IS \'%s\';' % (schema, table_name, 38, (first_sheet.cell(x, 1).value), (first_sheet.cell(x, 4).value)))
 
         f.close()
 
