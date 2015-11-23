@@ -161,7 +161,7 @@ class PhyModel(object):
             f = open('appl.sql', 'w+')
         f.write('-' * 80)
         f.write('\n-- ' + schema + '.' + table_name)
-        f.write('\n\nBEGIN\n\tEXECUTE IMMEDIATE \'DROP TABLE ' + schema + '.' + table_name + ' CASCADE CONSTRAINTS PURGE\';\n'
+        f.write('\n\nBEGIN\n    EXECUTE IMMEDIATE \'DROP TABLE ' + schema + '.' + table_name + ' CASCADE CONSTRAINTS PURGE\';\n'
                 'EXCEPTION WHEN OTHERS THEN\n\tIF SQLCODE != -942 THEN\n\t\tRAISE;\n\tEND IF;\nEND;\n/\n\n\n\n'
                 '\nCREATE TABLE ' + schema + '.' + table_name + '\n( ')
 
