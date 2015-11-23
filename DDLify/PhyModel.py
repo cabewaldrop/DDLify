@@ -162,7 +162,7 @@ class PhyModel(object):
         f.write('-' * 80)
         f.write('\n-- ' + schema + '.' + table_name)
         f.write('\n\nBEGIN\n    EXECUTE IMMEDIATE \'DROP TABLE ' + schema + '.' + table_name + ' CASCADE CONSTRAINTS PURGE\';\n'
-                'EXCEPTION WHEN OTHERS THEN\n\tIF SQLCODE != -942 THEN\n\t\tRAISE;\n\tEND IF;\nEND;\n/\n\n\n\n'
+                'EXCEPTION WHEN OTHERS THEN\n    IF SQLCODE != -942 THEN\n        RAISE;\n    END IF;\nEND;\n/\n\n\n\n'
                 '\nCREATE TABLE ' + schema + '.' + table_name + '\n( ')
 
         for i, x in enumerate(range(9, first_num_rows)):
