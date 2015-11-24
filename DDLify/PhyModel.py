@@ -130,8 +130,7 @@ class PhyModel(object):
     def create_ddl_file(self):
         """
         This function uses values contained in the spreadsheet to populate a DDL .sql file with table creation SQL code.
-        TO-DO: Grant select on DIM_TIME, etc. to all applications that access the specified SDSS_OWNER tables,
-        partitioning, rebuild logic? Unique Keys instead of PKs? Grant SELECT to UTEST if addutest?
+        TO-DO: Partitioning, rebuild logic? Unique Keys instead of PKs? Grant SELECT to UTEST if addutest?
         """
         first_sheet = self.book.sheet_by_index(0)
         first_num_rows = first_sheet.nrows
@@ -199,9 +198,41 @@ class PhyModel(object):
                     'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_JOBS;\n'
                     'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ETL_ADMIN;\n'
                     'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + schema + '.' + table_name + ' TO DEVELOPER_RW;\n\n')
-        elif 'DIM_ACCT_CPS' or 'DIM_CUST_CPS' or 'FACT_ACCT_PRFTBLY_12MRA' or 'FACT_ACCT_PRFTBLY_MTHLY' or 'FACT_ACCT_PRFTBLY_YTD' in table_name:
+        if 'DIM_TIME' or 'DIM_DAY' or 'DIM_MTH' or 'DIM_QTR' or 'DIM_WK' or 'DIM_YR' in table_name:
+            f.write('GRANT SELECT ON ' + schema + '.' + table_name + ' TO COMM_OWNER;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO COMM_STG;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO COMM_JOBS;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CA_OWNER;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CA_STG;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CA_JOBS;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO OAO_OWNER;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO OAO_STG;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO OAO_JOBS;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO MRDC_OWNER;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO MRDC_STG;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO MRDC_JOBS;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CEN_OWNER;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CEN_STG;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CEN_JOBS;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CARD_OWNER;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CARD_STG;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CARD_JOBS;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CLO_OWNER;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CLO_STG;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CLO_JOBS;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO DF_OWNER;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO DF_STG;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO DF_JOBS;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CMPGN_OWNER;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CMPGN_STG;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CMPGN_JOBS;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO PROS_OWNER;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO PROS_STG;\n'
+                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO PROS_JOBS;\n')
+
+        if 'DIM_ACCT_CPS' or 'DIM_CUST_CPS' or 'FACT_ACCT_PRFTBLY_12MRA' or 'FACT_ACCT_PRFTBLY_MTHLY' or 'FACT_ACCT_PRFTBLY_YTD' in table_name:
             f.write('GRANT ALTER ON ' + schema + '.' + table_name + ' TO SDSS_JOBS;\n')
-        elif 'CA_FACT_ACCT_PRFTBLY_MNTHLY' in table_name:
+        if 'CA_FACT_ACCT_PRFTBLY_MNTHLY' in table_name:
             f.write('GRANT ALTER ON ' + schema + '.' + table_name + ' TO CA_JOBS;\n')
 
         if second_sheet.cell(1, 2).value == 'Y':
