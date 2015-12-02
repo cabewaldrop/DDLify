@@ -126,22 +126,19 @@ class PhyModel(object):
             print(self.validation_message)
             exit()
 
-
     def create_ddl_file(self):
         """
         This function uses values contained in the spreadsheet to populate a DDL .sql file with table creation SQL code.
-        TO-DO: Partitioning, rebuild logic? Unique Keys instead of PKs? Grant SELECT to UTEST if addutest?
         """
         first_sheet = self.book.sheet_by_index(0)
         first_num_rows = first_sheet.nrows
         second_sheet = self.book.sheet_by_index(1)
+        second_num_rows = second_sheet.nrows
         third_sheet = self.book.sheet_by_index(2)
         schema = first_sheet.cell(0, 2).value
         table_name = first_sheet.cell(1, 2).value
         tablespace = first_sheet.cell(5, 2).value
         index = second_sheet.cell(1, 2).value
-        index_column = second_sheet.cell(1, 5).value
-        index_order = second_sheet.cell(1, 6).value
         system = schema.split('_', 1)[0]
         primary_key = third_sheet.cell(1, 0).value
         pk_index = third_sheet.cell(1, 2).value
@@ -168,25 +165,26 @@ class PhyModel(object):
             if i > 0:
                 f.write('\n, ',)
             f.write('%-*s %-*s %s' % (35, (first_sheet.cell(x, 1).value), 20, (first_sheet.cell(x, 2).value), (first_sheet.cell(x, 3).value)))
-        f.write('\n)\nCOMPRESS FOR OLTP\nTABLESPACE ' + tablespace + '\n;\n\n\n')
+        f.write('\n)\nCOMPRESS FOR OLTP\nTABLESPACE ' + tablespace + '\n')
+        if first_sheet.cell(4, 2).value in ('Daily', 'Monthly', 'DAILY', 'MONTHLY', 'DLY', 'MTHLY', 'Dly', 'Mthly'):
+            f.write('PARTITION BY LIST (DAY_ID)\n( PARTITION P20120131 VALUES (20120131)\n  LOGGING\n  COMPRESS FOR QUERY LOW\n  TABLESPACE ' + tablespace + '\n)\nENABLE ROW MOVEMENT\n;\n\n\n' )
+        else:
+            f.write(';\n\n\n')
         if '_OWNER' in schema:
             f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_JOBS;\n'
                     'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_OWNER_RW;\n'
                     'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ETL_ADMIN;\n'
                     'GRANT SELECT ON ' + schema + '.' + table_name + ' TO ' + system + '_OWNER_READ;\n'
                     'GRANT SELECT ON ' + schema + '.' + table_name + ' TO MSTR_ADMIN;\n'
-                    # 'GRANT SELECT ON ' + schema + '.' + table_name + ' TO ' + system + '_UTEST;\n'
                     'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + schema + '.' + table_name + ' TO DEVELOPER_RW;\n\n')
         elif '_STG' in schema:
             f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_JOBS;\n'
                     'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_STG_RW;\n'
                     'GRANT SELECT ON ' + schema + '.' + table_name + ' TO ' + system + '_STG_READ;\n'
-                    # 'GRANT SELECT ON ' + schema + '.' + table_name + ' TO ' + system + '_UTEST;\n'
                     'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ETL_ADMIN;\n'
                     'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + schema + '.' + table_name + ' TO DEVELOPER_RW;\n\n')
         elif '_JOBS' in schema:
-            f.write(  # 'GRANT SELECT ON ' + schema + '.' + table_name + ' TO ' + system + '_UTEST;\n'
-                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ETL_ADMIN;\n'
+            f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ETL_ADMIN;\n'
                     'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + schema + '.' + table_name + ' TO DEVELOPER_RW;\n\n')
         elif '_CNTL' in schema:
             f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_JOBS;\n'
@@ -229,25 +227,23 @@ class PhyModel(object):
                     'GRANT SELECT ON ' + schema + '.' + table_name + ' TO PROS_OWNER;\n'
                     'GRANT SELECT ON ' + schema + '.' + table_name + ' TO PROS_STG;\n'
                     'GRANT SELECT ON ' + schema + '.' + table_name + ' TO PROS_JOBS;\n')
-
         if 'DIM_ACCT_CPS' or 'DIM_CUST_CPS' or 'FACT_ACCT_PRFTBLY_12MRA' or 'FACT_ACCT_PRFTBLY_MTHLY' or 'FACT_ACCT_PRFTBLY_YTD' in table_name:
             f.write('GRANT ALTER ON ' + schema + '.' + table_name + ' TO SDSS_JOBS;\n')
         if 'CA_FACT_ACCT_PRFTBLY_MNTHLY' in table_name:
             f.write('GRANT ALTER ON ' + schema + '.' + table_name + ' TO CA_JOBS;\n')
 
-        if second_sheet.cell(1, 2).value == 'Y':
-            f.write('CREATE UNIQUE INDEX ' + schema + '.' + index + ' ON ' + schema + '.' + table_name + '(' + index_column + ' ' + index_order + ')\n')
-        else:
-            f.write('CREATE INDEX ' + schema + '.' + index + ' ON ' + schema + '.' + table_name + '(' + index_column + ' ' + index_order + ')\n')
-        if second_sheet.cell(1, 4).value == 'N':
-            f.write('NOLOGGING\n')
-        else:
-            f.write('LOGGING\n')
-        if second_sheet.cell(1, 3).value == 'N':
-            f.write('NOCOMPRESS\n')
-        else:
-            f.write('COMPRESS\n')
-        f.write('TABLESPACE ' + tablespace + '\n;\n')
+        for i, x in enumerate(range(1, second_num_rows)):
+            index_type = ('UNIQUE INDEX' if second_sheet.cell(x, 2).value == 'Y' else 'INDEX')
+            f.write('CREATE %s %s.%s ON %s.%s (%s %s)\n' % (index_type, schema, index, schema, table_name, second_sheet.cell(x, 5).value, second_sheet.cell(x, 6).value))
+            if second_sheet.cell(x, 4).value == 'N':
+                f.write('NOLOGGING\n')
+            else:
+                f.write('LOGGING\n')
+            if second_sheet.cell(x, 3).value == 'N':
+                f.write('NOCOMPRESS\n')
+            else:
+                f.write('COMPRESS\n')
+            f.write('TABLESPACE ' + tablespace + '\n;\n\n\n')
         f.write('ALTER TABLE ' + schema + '.' + table_name + ' ADD CONSTRAINT ' + primary_key + ' PRIMARY KEY (' + pk_column + ') USING INDEX ' + schema + '.' + pk_index + ';\n\n\n')
         f.write('COMMENT ON TABLE %s.%-*s IS \'%s\';' % (schema, 48, table_name, table_comment))
         for x in range(9, first_num_rows):
