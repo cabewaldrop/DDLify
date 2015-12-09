@@ -138,7 +138,6 @@ class PhyModel(object):
         schema = first_sheet.cell(0, 2).value
         table_name = first_sheet.cell(1, 2).value
         tablespace = first_sheet.cell(5, 2).value
-        index = second_sheet.cell(1, 2).value
         system = schema.split('_', 1)[0]
         primary_key = third_sheet.cell(1, 0).value
         pk_index = third_sheet.cell(1, 2).value
@@ -234,7 +233,7 @@ class PhyModel(object):
 
         for i, x in enumerate(range(1, second_num_rows)):
             index_type = ('UNIQUE INDEX' if second_sheet.cell(x, 2).value == 'Y' else 'INDEX')
-            f.write('CREATE %s %s.%s ON %s.%s (%s %s)\n' % (index_type, schema, index, schema, table_name, second_sheet.cell(x, 5).value, second_sheet.cell(x, 6).value))
+            f.write('CREATE %s %s.%s ON %s.%s (%s %s)\n' % (index_type, schema, second_sheet.cell(x, 0).value, schema, table_name, second_sheet.cell(x, 5).value, second_sheet.cell(x, 6).value))
             if second_sheet.cell(x, 4).value == 'N':
                 f.write('NOLOGGING\n')
             else:
@@ -248,7 +247,6 @@ class PhyModel(object):
         f.write('COMMENT ON TABLE %s.%-*s IS \'%s\';' % (schema, 48, table_name, table_comment))
         for x in range(9, first_num_rows):
             f.write('\nCOMMENT ON COLUMN %s.%s.%-*s IS \'%s\';' % (schema, table_name, 38, (first_sheet.cell(x, 1).value), (first_sheet.cell(x, 4).value)))
-
         f.close()
 
     print filecmp.cmp('C:\Users\\xsc1712\PycharmProjects\DDLify\DDL_OUT\owner.sql', 'C:\Users\\xsc1712\PycharmProjects\DDLify\Tests\correct_ddl.sql')
