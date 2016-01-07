@@ -144,16 +144,7 @@ class PhyModel(object):
         pk_column = third_sheet.cell(1, 3).value
         table_comment = first_sheet.cell(6, 2).value
 
-        if '_STG' in schema:
-            f = open('stg.sql', 'w+')
-        if '_OWNER' in schema:
-            f = open('owner.sql', 'w+')
-        if '_JOBS' in schema:
-            f = open('jobs.sql', 'w+')
-        if '_CNTL' in schema:
-            f = open('cntl.sql', 'w+')
-        if '_APPL' in schema:
-            f = open('appl.sql', 'w+')
+        f = open(table_name + '.sql', 'w+')
         f.write('-' * 80)
         f.write('\n-- ' + schema + '.' + table_name)
         f.write('\n\nBEGIN\n    EXECUTE IMMEDIATE \'DROP TABLE ' + schema + '.' + table_name + ' CASCADE CONSTRAINTS PURGE\';\n'
