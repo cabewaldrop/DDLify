@@ -135,13 +135,11 @@ class PhyModel(object):
         second_sheet = self.book.sheet_by_index(1)
         second_num_rows = second_sheet.nrows
         third_sheet = self.book.sheet_by_index(2)
+        third_num_rows = third_sheet.nrows
         schema = first_sheet.cell(0, 2).value
         table_name = first_sheet.cell(1, 2).value
         tablespace = first_sheet.cell(5, 2).value
         system = schema.split('_', 1)[0]
-        primary_key = third_sheet.cell(1, 0).value
-        pk_index = third_sheet.cell(1, 2).value
-        pk_column = third_sheet.cell(1, 3).value
         table_comment = first_sheet.cell(6, 2).value
 
         f = open(table_name + '.sql', 'w+')
@@ -234,7 +232,13 @@ class PhyModel(object):
             else:
                 f.write('COMPRESS\n')
             f.write('TABLESPACE ' + tablespace + '\n;\n\n\n')
-        f.write('ALTER TABLE ' + schema + '.' + table_name + ' ADD CONSTRAINT ' + primary_key + ' PRIMARY KEY (' + pk_column + ') USING INDEX ' + schema + '.' + pk_index + ';\n\n\n')
+        else:
+            f.write('\n')
+
+        for i, x in enumerate(range(1, third_num_rows)):
+            f.write('ALTER TABLE ' + schema + '.' + table_name + ' ADD CONSTRAINT ' + third_sheet.cell(x, 0).value + ' PRIMARY KEY (' + third_sheet.cell(x, 3).value + ') USING INDEX ' + schema + '.' + third_sheet.cell(x, 2).value + ';\n\n\n')
+        else:
+            f.write('\n')
         f.write('COMMENT ON TABLE %s.%-*s IS \'%s\';' % (schema, 48, table_name, table_comment))
         for x in range(9, first_num_rows):
             f.write('\nCOMMENT ON COLUMN %s.%s.%-*s IS \'%s\';' % (schema, table_name, 38, (first_sheet.cell(x, 1).value), (first_sheet.cell(x, 4).value)))
