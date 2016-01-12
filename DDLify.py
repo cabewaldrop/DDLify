@@ -21,7 +21,7 @@ def main(filename):
             sys.exit(1)
     elif os.path.isdir(filename):
         for spreadsheet in os.listdir(filename):
-            if spreadsheet.endswith(".xls"):
+            if spreadsheet.endswith(".xlsx"):
                 model = PhyModel(spreadsheet)
                 model.validate_model()
                 if model.validation_message == '':

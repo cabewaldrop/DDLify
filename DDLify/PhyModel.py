@@ -136,93 +136,96 @@ class PhyModel(object):
         second_num_rows = second_sheet.nrows
         third_sheet = self.book.sheet_by_index(2)
         third_num_rows = third_sheet.nrows
-        schema = first_sheet.cell(0, 2).value
-        table_name = first_sheet.cell(1, 2).value
-        tablespace = first_sheet.cell(5, 2).value
-        system = schema.split('_', 1)[0]
-        table_comment = first_sheet.cell(6, 2).value
+        system = self.schema.split('_', 1)[0]
+        index_column_count = second_sheet.ncols
 
-        f = open(table_name + '.sql', 'w+')
+        f = open(self.table_name + '.sql', 'w+')
         f.write('-' * 80)
-        f.write('\n-- ' + schema + '.' + table_name)
-        f.write('\n\nBEGIN\n    EXECUTE IMMEDIATE \'DROP TABLE ' + schema + '.' + table_name + ' CASCADE CONSTRAINTS PURGE\';\n'
+        f.write('\n-- ' + self.schema + '.' + self.table_name)
+        f.write('\n\nBEGIN\n    EXECUTE IMMEDIATE \'DROP TABLE ' + self.schema + '.' + self.table_name + ' CASCADE CONSTRAINTS PURGE\';\n'
                 'EXCEPTION WHEN OTHERS THEN\n    IF SQLCODE != -942 THEN\n        RAISE;\n    END IF;\nEND;\n/\n\n\n\n'
-                '\nCREATE TABLE ' + schema + '.' + table_name + '\n( ')
+                '\nCREATE TABLE ' + self.schema + '.' + self.table_name + '\n( ')
 
         for i, x in enumerate(range(9, first_num_rows)):
             if i > 0:
                 f.write('\n, ',)
             f.write('%-*s %-*s %s' % (35, (first_sheet.cell(x, 1).value), 20, (first_sheet.cell(x, 2).value), (first_sheet.cell(x, 3).value)))
-        f.write('\n)\nCOMPRESS FOR OLTP\nTABLESPACE ' + tablespace + '\n')
+        f.write('\n)\nCOMPRESS FOR OLTP\nTABLESPACE ' + self.tablespace + '\n')
         if first_sheet.cell(4, 2).value in ('Daily', 'Monthly', 'DAILY', 'MONTHLY', 'DLY', 'MTHLY', 'Dly', 'Mthly'):
-            f.write('PARTITION BY LIST (DAY_ID)\n( PARTITION P20120131 VALUES (20120131)\n  LOGGING\n  COMPRESS FOR QUERY LOW\n  TABLESPACE ' + tablespace + '\n)\nENABLE ROW MOVEMENT\n;\n\n\n' )
+            f.write('PARTITION BY LIST (DAY_ID)\n( PARTITION P20120131 VALUES (20120131)\n  LOGGING\n  COMPRESS FOR QUERY LOW\n  TABLESPACE ' + self.tablespace + '\n)\nENABLE ROW MOVEMENT\n;\n\n\n' )
         else:
             f.write(';\n\n\n')
-        if '_OWNER' in schema:
-            f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_JOBS;\n'
-                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_OWNER_RW;\n'
-                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ETL_ADMIN;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO ' + system + '_OWNER_READ;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO MSTR_ADMIN;\n'
-                    'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + schema + '.' + table_name + ' TO DEVELOPER_RW;\n\n')
-        elif '_STG' in schema:
-            f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_JOBS;\n'
-                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_STG_RW;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO ' + system + '_STG_READ;\n'
-                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ETL_ADMIN;\n'
-                    'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + schema + '.' + table_name + ' TO DEVELOPER_RW;\n\n')
-        elif '_JOBS' in schema:
-            f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ETL_ADMIN;\n'
-                    'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + schema + '.' + table_name + ' TO DEVELOPER_RW;\n\n')
-        elif '_CNTL' in schema:
-            f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_JOBS;\n'
-                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ETL_ADMIN;\n'
-                    'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + schema + '.' + table_name + ' TO DEVELOPER_RW;\n\n')
-        elif '_APPL' in schema:
-            f.write('GRANT SELECT ON ' + schema + '.' + table_name + ' TO ' + system + '_APPL_READ;\n'
-                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_APPL_RW;\n'
-                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ' + system + '_JOBS;\n'
-                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + schema + '.' + table_name + ' TO ETL_ADMIN;\n'
-                    'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + schema + '.' + table_name + ' TO DEVELOPER_RW;\n\n')
-        if 'DIM_TIME' or 'DIM_DAY' or 'DIM_MTH' or 'DIM_QTR' or 'DIM_WK' or 'DIM_YR' in table_name:
-            f.write('GRANT SELECT ON ' + schema + '.' + table_name + ' TO COMM_OWNER;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO COMM_STG;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO COMM_JOBS;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CA_OWNER;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CA_STG;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CA_JOBS;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO OAO_OWNER;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO OAO_STG;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO OAO_JOBS;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO MRDC_OWNER;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO MRDC_STG;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO MRDC_JOBS;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CEN_OWNER;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CEN_STG;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CEN_JOBS;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CARD_OWNER;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CARD_STG;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CARD_JOBS;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CLO_OWNER;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CLO_STG;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CLO_JOBS;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO DF_OWNER;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO DF_STG;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO DF_JOBS;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CMPGN_OWNER;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CMPGN_STG;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO CMPGN_JOBS;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO PROS_OWNER;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO PROS_STG;\n'
-                    'GRANT SELECT ON ' + schema + '.' + table_name + ' TO PROS_JOBS;\n')
-        if 'DIM_ACCT_CPS' or 'DIM_CUST_CPS' or 'FACT_ACCT_PRFTBLY_12MRA' or 'FACT_ACCT_PRFTBLY_MTHLY' or 'FACT_ACCT_PRFTBLY_YTD' in table_name:
-            f.write('GRANT ALTER ON ' + schema + '.' + table_name + ' TO SDSS_JOBS;\n')
-        if 'CA_FACT_ACCT_PRFTBLY_MNTHLY' in table_name:
-            f.write('GRANT ALTER ON ' + schema + '.' + table_name + ' TO CA_JOBS;\n')
+        if '_OWNER' in self.schema:
+            f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ' + system + '_JOBS;\n'
+                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ' + system + '_OWNER_RW;\n'
+                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ETL_ADMIN;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO ' + system + '_OWNER_READ;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO MSTR_ADMIN;\n'
+                    'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + self.schema + '.' + self.table_name + ' TO DEVELOPER_RW;\n\n')
+        elif '_STG' in self.schema:
+            f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ' + system + '_JOBS;\n'
+                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ' + system + '_STG_RW;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO ' + system + '_STG_READ;\n'
+                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ETL_ADMIN;\n'
+                    'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + self.schema + '.' + self.table_name + ' TO DEVELOPER_RW;\n\n')
+        elif '_JOBS' in self.schema:
+            f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ETL_ADMIN;\n'
+                    'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + self.schema + '.' + self.table_name + ' TO DEVELOPER_RW;\n\n')
+        elif '_CNTL' in self.schema:
+            f.write('GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ' + system + '_JOBS;\n'
+                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ETL_ADMIN;\n'
+                    'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + self.schema + '.' + self.table_name + ' TO DEVELOPER_RW;\n\n')
+        elif '_APPL' in self.schema:
+            f.write('GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO ' + system + '_APPL_READ;\n'
+                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ' + system + '_APPL_RW;\n'
+                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ' + system + '_JOBS;\n'
+                    'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ETL_ADMIN;\n'
+                    'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + self.schema + '.' + self.table_name + ' TO DEVELOPER_RW;\n\n')
+        if 'DIM_TIME' or 'DIM_DAY' or 'DIM_MTH' or 'DIM_QTR' or 'DIM_WK' or 'DIM_YR' in self.table_name:
+            f.write('GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO COMM_OWNER;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO COMM_STG;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO COMM_JOBS;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CA_OWNER;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CA_STG;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CA_JOBS;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO OAO_OWNER;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO OAO_STG;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO OAO_JOBS;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO MRDC_OWNER;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO MRDC_STG;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO MRDC_JOBS;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CEN_OWNER;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CEN_STG;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CEN_JOBS;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CARD_OWNER;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CARD_STG;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CARD_JOBS;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CLO_OWNER;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CLO_STG;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CLO_JOBS;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO DF_OWNER;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO DF_STG;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO DF_JOBS;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CMPGN_OWNER;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CMPGN_STG;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO CMPGN_JOBS;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO PROS_OWNER;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO PROS_STG;\n'
+                    'GRANT SELECT ON ' + self.schema + '.' + self.table_name + ' TO PROS_JOBS;\n')
+        if 'DIM_ACCT_CPS' or 'DIM_CUST_CPS' or 'FACT_ACCT_PRFTBLY_12MRA' or 'FACT_ACCT_PRFTBLY_MTHLY' or 'FACT_ACCT_PRFTBLY_YTD' in self.table_name:
+            f.write('GRANT ALTER ON ' + self.schema + '.' + self.table_name + ' TO SDSS_JOBS;\n')
+        if 'CA_FACT_ACCT_PRFTBLY_MNTHLY' in self.table_name:
+            f.write('GRANT ALTER ON ' + self.schema + '.' + self.table_name + ' TO CA_JOBS;\n')
 
         for i, x in enumerate(range(1, second_num_rows)):
             index_type = ('UNIQUE INDEX' if second_sheet.cell(x, 2).value == 'Y' else 'INDEX')
-            f.write('CREATE %s %s.%s ON %s.%s (%s %s)\n' % (index_type, schema, second_sheet.cell(x, 0).value, schema, table_name, second_sheet.cell(x, 5).value, second_sheet.cell(x, 6).value))
+            if index_column_count != 7:
+                if second_sheet.cell_type(x, 7) not in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK):
+                    f.write('CREATE %s %s.%s ON %s.%s (%s %s, %s %s)\n' % (index_type, self.schema, second_sheet.cell(x, 0).value, self.schema, self.table_name, second_sheet.cell(x, 5).value, second_sheet.cell(x, 6).value, second_sheet.cell(x, 7).value, second_sheet.cell(x, 8).value))
+                else:
+                    f.write('CREATE %s %s.%s ON %s.%s (%s %s)\n' % (index_type, self.schema, second_sheet.cell(x, 0).value, self.schema, self.table_name, second_sheet.cell(x, 5).value, second_sheet.cell(x, 6).value))
+            else:
+                f.write('CREATE %s %s.%s ON %s.%s (%s %s)\n' % (index_type, self.schema, second_sheet.cell(x, 0).value, self.schema, self.table_name, second_sheet.cell(x, 5).value, second_sheet.cell(x, 6).value))
             if second_sheet.cell(x, 4).value == 'N':
                 f.write('NOLOGGING\n')
             else:
@@ -231,17 +234,17 @@ class PhyModel(object):
                 f.write('NOCOMPRESS\n')
             else:
                 f.write('COMPRESS\n')
-            f.write('TABLESPACE ' + tablespace + '\n;\n\n\n')
+            f.write('TABLESPACE ' + self.tablespace + '\n;\n\n\n')
         else:
             f.write('\n')
 
         for i, x in enumerate(range(1, third_num_rows)):
-            f.write('ALTER TABLE ' + schema + '.' + table_name + ' ADD CONSTRAINT ' + third_sheet.cell(x, 0).value + ' PRIMARY KEY (' + third_sheet.cell(x, 3).value + ') USING INDEX ' + schema + '.' + third_sheet.cell(x, 2).value + ';\n\n\n')
+            f.write('ALTER TABLE ' + self.schema + '.' + self.table_name + ' ADD CONSTRAINT ' + third_sheet.cell(x, 0).value + ' PRIMARY KEY (' + third_sheet.cell(x, 3).value + ') USING INDEX ' + self.schema + '.' + third_sheet.cell(x, 2).value + ';\n\n\n')
         else:
             f.write('\n')
-        f.write('COMMENT ON TABLE %s.%-*s IS \'%s\';' % (schema, 48, table_name, table_comment))
+        f.write('COMMENT ON TABLE %s.%-*s IS \'%s\';' % (self.schema, 48, self.table_name, self.get_tablecomment))
         for x in range(9, first_num_rows):
-            f.write('\nCOMMENT ON COLUMN %s.%s.%-*s IS \'%s\';' % (schema, table_name, 38, (first_sheet.cell(x, 1).value), (first_sheet.cell(x, 4).value)))
+            f.write('\nCOMMENT ON COLUMN %s.%s.%-*s IS \'%s\';' % (self.schema, self.table_name, 38, (first_sheet.cell(x, 1).value), (first_sheet.cell(x, 4).value)))
         f.close()
 
     print filecmp.cmp('C:\Users\\xsc1712\PycharmProjects\DDLify\DDL_OUT\owner.sql', 'C:\Users\\xsc1712\PycharmProjects\DDLify\Tests\correct_ddl.sql')
