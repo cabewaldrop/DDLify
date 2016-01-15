@@ -182,7 +182,7 @@ class PhyModel(object):
                         'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ' + system + '_JOBS;\n'
                         'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ETL_ADMIN;\n'
                         'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + self.schema + '.' + self.table_name + ' TO DEVELOPER_RW;\n')
-            if self.table_name in ['DIM_TIME' or 'DIM_DAY' or 'DIM_MTH' or 'DIM_QTR' or 'DIM_WK' or 'DIM_YR']:
+            if self.table_name in ['DIM_TIME', 'DIM_DAY', 'DIM_MTH', 'DIM_QTR', 'DIM_WK', 'DIM_YR']:
                 all_schema_prefixes = ['COMM', 'CA', 'OAO', 'MRDC', 'CEN', 'CARD', 'CLO', 'DF', 'CMPGN', 'PROS']
                 schema_suffixes = ['_OWNER', '_STG', '_JOBS']
                 all_schemas = []
