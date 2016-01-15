@@ -138,9 +138,6 @@ class PhyModel(object):
         third_num_rows = third_sheet.nrows
         system = self.schema.split('_', 1)[0]
         index_column_count = second_sheet.ncols
-        all_schema_prefixes = ['COMM', 'CA', 'OAO', 'MRDC', 'CEN', 'CARD', 'CLO', 'DF', 'CMPGN', 'PROS']
-        schema_suffixes = ['_OWNER', '_STG', '_JOBS']
-        all_schemas = []
 
         with open(self.schema.split('_', 1)[1].lower() + '.sql', 'a') as f:
             # f = open(self.table_name + '.sql', 'w+')
@@ -185,7 +182,10 @@ class PhyModel(object):
                         'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ' + system + '_JOBS;\n'
                         'GRANT DELETE, INSERT, SELECT, UPDATE ON ' + self.schema + '.' + self.table_name + ' TO ETL_ADMIN;\n'
                         'GRANT SELECT, INSERT, UPDATE, ALTER, DELETE ON ' + self.schema + '.' + self.table_name + ' TO DEVELOPER_RW;\n')
-            if 'DIM_TIME' or 'DIM_DAY' or 'DIM_MTH' or 'DIM_QTR' or 'DIM_WK' or 'DIM_YR' in self.table_name:
+            if self.table_name in ['DIM_TIME' or 'DIM_DAY' or 'DIM_MTH' or 'DIM_QTR' or 'DIM_WK' or 'DIM_YR']:
+                all_schema_prefixes = ['COMM', 'CA', 'OAO', 'MRDC', 'CEN', 'CARD', 'CLO', 'DF', 'CMPGN', 'PROS']
+                schema_suffixes = ['_OWNER', '_STG', '_JOBS']
+                all_schemas = []
                 for p in all_schema_prefixes:
                     all_schemas += [p + s for s in schema_suffixes]
                 for i in all_schemas:
@@ -212,7 +212,7 @@ class PhyModel(object):
                     f.write('NOCOMPRESS\n')
                 else:
                     f.write('COMPRESS\n')
-                f.write('TABLESPACE ' + self.tablespace + '\n;\n\n\n')
+                f.write('TABLESPACE ' + self.tablespace + '\n;\n\n')
             else:
                 f.write('\n')
 
